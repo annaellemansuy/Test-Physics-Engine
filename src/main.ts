@@ -135,7 +135,7 @@ class finiteSegment{
 
   //create polygon
   class Polygon{
-    colour: string = 'black'
+    colour: string = 'pink'
     points: coordinate[]
     //... puts array (Variadic Parameter) 
     constructor(...points: coordinate[]){
@@ -158,12 +158,6 @@ class finiteSegment{
         ctx.fill()
       
     }
-// create a translate function
-    translate(dx:number,dy:number){
-      for(let i =1; i < this.points.length; i ++){
-        this.points[i].translate(dx,dy)
-      }
-    }
 
     //calculate the barycentre (centre of gravity) coordinate using averages
     calculateCentre(): coordinate{
@@ -175,8 +169,17 @@ class finiteSegment{
       }
       return new coordinate(x/this.points.length, y/this.points.length)
     }
+
+    // create a translate function
+    translate(dx:number,dy:number){
+      for(let i = 0; i < this.points.length; i ++){
+        this.points[i].translate(+ dx,dy)
+      }
+    }
+
     //create rotation function
     rotate(centre:coordinate, angle: number){
+      //centre = this.calculateCentre()
       for(let i = 0; i< this.points.length;i ++){
         this.points[i].rotate(centre,angle)
       }
@@ -187,7 +190,6 @@ class finiteSegment{
  //draw Rectangle
  //1: Top Left, 2: Top Right, 3: Bottom Right, 4: Bottom Left
  function createRect(centre:coordinate, length:number, height:number): Polygon {
-   console.log("drawing rect")
   const x1 = centre.x - length/2
   const y1 = centre.y - height/2
   const x2 = centre.x + length/2
@@ -196,11 +198,13 @@ class finiteSegment{
   const y3 = centre.y + height/2
   const x4 = centre.x - length/2
   const y4 = centre.y + height/2
+  console.log("centre " + centre.x, centre.y)
   return new Polygon(new coordinate(x1,y1),new coordinate(x2,y2), new coordinate(x3,y3), new coordinate(x4,y4))
 }
 
   function initialise(){
     const newSquare = createRect(new coordinate(200,300), 50, 30)
+    newSquare.translate(10,10)
     const c1 = new coordinate(300,300)
     const c2 = new coordinate (200,40)
     const seg1 = new finiteSegment(c1,c2)
