@@ -3,6 +3,21 @@ class coordinate {
     this.x = x
     this.y = y
   }
+//translation
+  translate(dx:number,dy:number){
+    this.x = this.x + dx 
+    this.y = this.y + dy
+  }
+//rotation
+rotate(centre: coordinate, angle: number){
+  const x = this.x - centre.x
+  const y = this.y - centre.y
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+  this.x = centre.x + (x*cos - y*sin)
+  this.y = centre.y + (x*sin + y*sin)
+}
+
 }
 
 class finiteSegment{
@@ -118,9 +133,75 @@ class finiteSegment{
     }
   }
 
+  //create polygon
+  class Polygon{
+    colour: string = 'black'
+    points: coordinate[]
+    //... puts array (Variadic Parameter) 
+    constructor(...points: coordinate[]){
+      this.points = points
+    }
+    changeColour(colour:string){
+      this.colour = colour
+    }
+
+    draw(ctx: CanvasRenderingContext2D){
+      ctx.beginPath()
+      //use iteration
+      ctx.moveTo(this.points[0].x, this.points[0].y)
+        //length for array
+        for(let i = 1; i < this.points.length; i ++){
+          ctx.lineTo(this.points[i].x, this.points[i].y)
+        }
+        ctx.closePath()
+        ctx.fillStyle = this.colour
+        ctx.fill()
+      
+    }
+// create a translate function
+    translate(dx:number,dy:number){
+      for(let i =1; i < this.points.length; i ++){
+        this.points[i].translate(dx,dy)
+      }
+    }
+
+    //calculate the barycentre (centre of gravity) coordinate using averages
+    calculateCentre(): coordinate{
+      let x = 0
+      let y = 0
+      for(let i =0; i< this.points.length;i ++){
+        x += this.points[i].x
+        y += this.points[i].y
+      }
+      return new coordinate(x/this.points.length, y/this.points.length)
+    }
+    //create rotation function
+    rotate(centre:coordinate, angle: number){
+      for(let i = 0; i< this.points.length;i ++){
+        this.points[i].rotate(centre,angle)
+      }
+    }
+
+ }
+  
+ //draw Rectangle
+ //1: Top Left, 2: Top Right, 3: Bottom Right, 4: Bottom Left
+ function createRect(centre:coordinate, length:number, height:number): Polygon {
+   console.log("drawing rect")
+  const x1 = centre.x - length/2
+  const y1 = centre.y - height/2
+  const x2 = centre.x + length/2
+  const y2 = centre.y - height/2
+  const x3 = centre.x + length/2
+  const y3 = centre.y + height/2
+  const x4 = centre.x - length/2
+  const y4 = centre.y + height/2
+  return new Polygon(new coordinate(x1,y1),new coordinate(x2,y2), new coordinate(x3,y3), new coordinate(x4,y4))
+}
 
   function initialise(){
-    const c1 = new coordinate(200,300)
+    const newSquare = createRect(new coordinate(200,300), 50, 30)
+    const c1 = new coordinate(300,300)
     const c2 = new coordinate (200,40)
     const seg1 = new finiteSegment(c1,c2)
     const seg2 = new finiteSegment(new coordinate(300,200), new coordinate(40,20))
@@ -129,6 +210,7 @@ class finiteSegment{
     const canvas = document.getElementById('canvas') as HTMLCanvasElement // convert element to a type- not necessary but tells compiler that this object is a canvas
     const ctx = canvas.getContext('2d')
       if(ctx != null){
+        newSquare.draw(ctx)
         seg1.changeColour("pink")
         seg2.changeColour("purple")
         seg1.draw(ctx)
