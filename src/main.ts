@@ -137,9 +137,13 @@ class finiteSegment{
   class Polygon{
     colour: string = 'pink'
     points: coordinate[]
+    dx: number
+    dy: number
     //... puts array (Variadic Parameter) 
     constructor(...points: coordinate[]){
       this.points = points
+      this.dx = 0
+      this.dy = 0
     }
     changeColour(colour:string){
       this.colour = colour
@@ -186,15 +190,16 @@ class finiteSegment{
     // create a translate function
     translate(dx:number,dy:number){
       for(let i = 0; i < this.points.length; i ++){
-        this.points[i].translate(+ dx,dy)
+        this.points[i].translate(dx,dy)
       }
     }
-    /*
-    //gets all the segments in the shape
-    allSegments():finiteSegment[]{
-      let segemnts = finiteSegment[] = []
-      for()
-    }*/
+    //how much the x and y change by millisecond
+    update(time: number){
+      const dx = this.dx*time
+      const dy = this.dy*time
+      console.log(`dx=${dx},dy=${dy}`)
+      this.translate(dx,dy)
+    }
 
 
  }
@@ -214,33 +219,75 @@ class finiteSegment{
   return new Polygon(new coordinate(x1,y1),new coordinate(x2,y2), new coordinate(x3,y3), new coordinate(x4,y4))
 }
 
+//... as many parameter as you like
+class GameEngine{
+  shapes: Polygon []
+  currentTime: Date
+  constructor(...shapes:Polygon[]){
+    console.log('constructor game')
+    this.shapes = shapes
+    this.currentTime = new Date() //creates new date out of the timer
+  }
+  draw(ctx: CanvasRenderingContext2D){
+    for(let i = 0; i < this.shapes.length; i ++){
+      this.shapes[i].draw(ctx)}
+  }
+
+  addShape(shape: Polygon){
+    this.shapes.push(shape) //add shape to array
+  }
+  //clears the screen
+  clear(ctx:CanvasRenderingContext2D) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  }
+
+  animationLoop(time: Date,ctx:CanvasRenderingContext2D){
+    //getTime gets the time value in milliseconds since the 1 janvier 1970
+    const dt = time.getTime()-this.currentTime.getTime()
+    this.currentTime = time
+    //update the position of all the shapes
+    for(let i = 0; i< this.shapes.length;i++){
+      this.shapes[i].update(dt)     
+      // request animation frame asks to call function next time the computer draws the matrix of the screen (web browser screen) call function animation loop with the date 
+    }
+    //clear the screen
+    this.clear(ctx)
+    //draw the shapes again
+    this.draw(ctx)
+    //next time u redraw the matrix of the screen you call animation loop again
+    //arow function => (return)
+    window.requestAnimationFrame(()=>this.animationLoop(new Date(),ctx))
+
+  }
+}
+//global variable 
+const game = new GameEngine()
+
   function initialise(){
+    console.log("init")
     const newSquare = createRect(new coordinate(200,300), 50, 30)
     //const centre = newSquare.calculateCentre()
     newSquare.rotateCentre(Math.PI/4)
-    newSquare.translate(10,10)
-    const c1 = new coordinate(300,300)
-    const c2 = new coordinate (200,40)
-    const seg1 = new finiteSegment(c1,c2)
-    const seg2 = new finiteSegment(new coordinate(300,200), new coordinate(40,20))
-    const u = seg1.checkForIntersectingPoints(seg2)
-    const radius: number = 5
+    newSquare.dy = 0
+    newSquare.dx = 0
+
+    const square2 = createRect(new coordinate(50,50),100,100)
+    square2.dy = 0
+    square2.colour = "orange"
+   
+    game.addShape(newSquare)
+    game.addShape(square2)
+
     const canvas = document.getElementById('canvas') as HTMLCanvasElement // convert element to a type- not necessary but tells compiler that this object is a canvas
     const ctx = canvas.getContext('2d')
       if(ctx != null){
-        newSquare.draw(ctx)
-        seg1.changeColour("pink")
-        seg2.changeColour("purple")
-        seg1.draw(ctx)
-        seg2.draw(ctx)
-        if (u != null){
-          const circle1 = new Circle(u,radius)
-          circle1.draw(ctx)   
-        }
+        game.animationLoop(new Date(),ctx)
       }
       else{
         console.log("error")
       }
     }
+
+  
   window.onload = initialise
   export{initialise}
