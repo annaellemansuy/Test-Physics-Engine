@@ -12,10 +12,10 @@ class coordinate {
 rotate(centre: coordinate, angle: number){
   const x = this.x - centre.x
   const y = this.y - centre.y
-  const cos = Math.cos(angle)
-  const sin = Math.sin(angle)
-  this.x = centre.x + (x*cos - y*sin)
-  this.y = centre.y + (x*sin + y*sin)
+  const rotX = x*Math.cos(angle) - y*Math.sin(angle)
+  const rotY = x*Math.sin(angle) + y*Math.cos(angle)
+  this.x = rotX + centre.x 
+  this.y = rotY + centre.y
 }
 
 }
@@ -169,6 +169,19 @@ class finiteSegment{
       }
       return new coordinate(x/this.points.length, y/this.points.length)
     }
+    //calculate centre and apply the angle so you don't need to type two lines of code
+    rotateCentre(angle:number) {
+      const centre = this.calculateCentre()
+      this.rotate(centre,angle)
+    }
+
+    //create rotation function
+    rotate(centre:coordinate, angle: number){
+        //centre = this.calculateCentre()
+          for(let i = 0; i< this.points.length;i ++){
+            this.points[i].rotate(centre,angle)
+          }
+    }
 
     // create a translate function
     translate(dx:number,dy:number){
@@ -176,14 +189,13 @@ class finiteSegment{
         this.points[i].translate(+ dx,dy)
       }
     }
+    /*
+    //gets all the segments in the shape
+    allSegments():finiteSegment[]{
+      let segemnts = finiteSegment[] = []
+      for()
+    }*/
 
-    //create rotation function
-    rotate(centre:coordinate, angle: number){
-      //centre = this.calculateCentre()
-      for(let i = 0; i< this.points.length;i ++){
-        this.points[i].rotate(centre,angle)
-      }
-    }
 
  }
   
@@ -204,6 +216,8 @@ class finiteSegment{
 
   function initialise(){
     const newSquare = createRect(new coordinate(200,300), 50, 30)
+    //const centre = newSquare.calculateCentre()
+    newSquare.rotateCentre(Math.PI/4)
     newSquare.translate(10,10)
     const c1 = new coordinate(300,300)
     const c2 = new coordinate (200,40)
