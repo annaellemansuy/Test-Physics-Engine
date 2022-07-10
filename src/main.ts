@@ -59,12 +59,18 @@ class finiteSegment{
     }
 
     //if one line is vertical.. 
+    //forgot the this.contains so it always thinks it's colliding because the segments are infinite
     if(x2==x1){
       const x = x1
       const gradC = (y3-y4)/(x3-x4)
       const d = y3 - (gradC)*x3
       const y = gradC*x1+d
-      return new coordinate(x,y)
+      const interesctingPoint = new coordinate(x,y)
+      if (this.contains(interesctingPoint) && s.contains(interesctingPoint)){
+        console.log(`Point: x=${x},y=${y}`)
+        return interesctingPoint
+      }
+      return null
     }
 
     if(x3==x4){
@@ -72,7 +78,12 @@ class finiteSegment{
       const gradA = (y2-y1)/(x1-x2)
       const b = y2 - (gradA)*x3
       const y = gradA*x3+b
-      return new coordinate(x,y)
+      const interesctingPoint = new coordinate(x,y)
+      if (this.contains(interesctingPoint) && s.contains(interesctingPoint)){
+        console.log(`Point: x=${x},y=${y}`)
+        return interesctingPoint
+      }
+      return null
     }
 //if two lines verticals 
     const gradA = (y2-y1)/(x2-x1)
@@ -82,8 +93,13 @@ class finiteSegment{
 
      // parallel
      if(gradA == gradC) {
-       if(b==d) {
-         return new coordinate(x1,x2)
+       if(b==d) {      
+         const interesctingPoint = new coordinate(x1,x2)
+         if (this.contains(interesctingPoint) && s.contains(interesctingPoint)){
+           console.log(`Point: x=${x1},y=${x2}`)
+           return interesctingPoint
+         }
+         return null
        }
       return null
     }
@@ -98,7 +114,7 @@ class finiteSegment{
       console.log(`Point: x=${x},y=${y}`)
       return interesctingPoint
     }
-    console.log("null")
+    //console.log("null")
     return null
  }
 
@@ -200,6 +216,38 @@ class finiteSegment{
       console.log(`dx=${dx},dy=${dy}`)
       this.translate(dx,dy)
     }
+    //method in polygon class detecting collisions
+    collideWith(p:Polygon): coordinate[]{
+      const collisions : coordinate[] = []
+      const l1 = p.listSegments()
+      const l2 = this.listSegments()
+      for(let i =0; i< l1.length;i++){
+        for(let j=0; j<l2.length;j++){
+          const c = l1[i].checkForIntersectingPoints(l2[j])
+          //there is intersection
+          if(c != null){
+            //add interesction point in the array
+            console.log(`segment ${i} and ${j} intersect at x=${c.x},y=${c.y}`)
+            collisions.push(c)
+          }
+         
+        }
+      }
+
+      return collisions
+    }
+
+    //list the segments of the polygon
+    listSegments():finiteSegment[]{
+      const segments: finiteSegment[] = []
+      for(let i=0; i< this.points.length;i++){
+        //the modulo is because we loop back to zero when we finish drawing the shape, the modulo limits the sequence into modulo, i cannot be greater than the modulo
+        //modulo creates sequences that repeat
+        const s = new finiteSegment(this.points[i],this.points[(i+1)%this.points.length])
+        segments.push(s)
+      }
+      return segments
+    }
 
 
  }
@@ -250,6 +298,23 @@ class GameEngine{
       this.shapes[i].update(dt)     
       // request animation frame asks to call function next time the computer draws the matrix of the screen (web browser screen) call function animation loop with the date 
     }
+    //change colour of the shape if it's colliding
+    for(let i = 0; i<this.shapes.length;i++){
+      for(let j=0; j<this.shapes.length;j++){
+        if(i != j){
+          const c = this.shapes[i].collideWith(this.shapes[j])
+          if(c.length>0){
+            this.shapes[i].colour = "red"
+            this.shapes[j].colour = "red"
+            const circle = new Circle(c[0],100)
+            circle.colour = "red"
+            circle.draw(ctx)
+            console.log(`cx=${c[0].x},cy=${c[0].y}`)
+          }
+        }
+      }
+    }
+
     //clear the screen
     this.clear(ctx)
     //draw the shapes again
@@ -271,6 +336,7 @@ const game = new GameEngine()
     newSquare.dy = 0
     newSquare.dx = 0
 
+  newSquare.translate(-90,-190)
     const square2 = createRect(new coordinate(50,50),100,100)
     square2.dy = 0
     square2.colour = "orange"
