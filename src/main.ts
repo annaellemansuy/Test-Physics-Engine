@@ -147,19 +147,32 @@ class finiteSegment{
       ctx.arc(this.centre.x, this.centre.y, this.radius, 0, 2 * Math.PI )
       ctx.stroke()
     }
+    //detect collision with another circle
+    collideWith(anotherCircle: Circle){
+      const minDistance = Math.sqrt((anotherCircle.centre.x - this.centre.x) +(anotherCircle.centre.y - this.centre.y))
+      const distance = this.radius + anotherCircle.radius
+      if (distance < minDistance){
+        return true
+      }
+      return false
+    }
   }
 
   //create polygon
   class Polygon{
+    mass: number
     colour: string = 'pink'
     points: coordinate[]
     dx: number
     dy: number
+    angularRotation:number
     //... puts array (Variadic Parameter) 
     constructor(...points: coordinate[]){
       this.points = points
       this.dx = 0
       this.dy = 0
+      this.mass = 1
+      this.angularRotation = 0
     }
     changeColour(colour:string){
       this.colour = colour
@@ -214,8 +227,10 @@ class finiteSegment{
       const dx = this.dx*time
       const dy = this.dy*time
       console.log(`dx=${dx},dy=${dy}`)
+      this.rotateCentre(this.angularRotation)
       this.translate(dx,dy)
     }
+
     //method in polygon class detecting collisions
     collideWith(p:Polygon): coordinate[]{
       const collisions : coordinate[] = []
@@ -248,7 +263,13 @@ class finiteSegment{
       }
       return segments
     }
+    //resolving collisions: collision works but shape becomes trapped to avoid this I need to seperate the shape when they collide
+    //collision solve displacement
 
+    resolveCollision(p: Polygon){
+      this.dx = -this.dx
+      this.dy = -this.dy 
+    }
 
  }
   
@@ -266,6 +287,7 @@ class finiteSegment{
   console.log("centre " + centre.x, centre.y)
   return new Polygon(new coordinate(x1,y1),new coordinate(x2,y2), new coordinate(x3,y3), new coordinate(x4,y4))
 }
+
 
 //... as many parameter as you like
 class GameEngine{
@@ -293,6 +315,8 @@ class GameEngine{
     //getTime gets the time value in milliseconds since the 1 janvier 1970
     const dt = time.getTime()-this.currentTime.getTime()
     this.currentTime = time
+    //update for circles
+    
     //update the position of all the shapes
     for(let i = 0; i< this.shapes.length;i++){
       this.shapes[i].update(dt)     
@@ -304,12 +328,7 @@ class GameEngine{
         if(i != j){
           const c = this.shapes[i].collideWith(this.shapes[j])
           if(c.length>0){
-            this.shapes[i].colour = "red"
-            this.shapes[j].colour = "red"
-            const circle = new Circle(c[0],100)
-            circle.colour = "red"
-            circle.draw(ctx)
-            console.log(`cx=${c[0].x},cy=${c[0].y}`)
+            this.shapes[i].resolveCollision(this.shapes[j])
           }
         }
       }
@@ -330,19 +349,41 @@ const game = new GameEngine()
 
   function initialise(){
     console.log("init")
-    const newSquare = createRect(new coordinate(200,300), 50, 30)
-    //const centre = newSquare.calculateCentre()
+    const newSquare = createRect(new coordinate(80,80), 50, 30)
     newSquare.rotateCentre(Math.PI/4)
-    newSquare.dy = 0
-    newSquare.dx = 0
+    newSquare.dy = 0.5
+    newSquare.dx = 0.2
+    newSquare.angularRotation = 0.02
 
-  newSquare.translate(-90,-190)
-    const square2 = createRect(new coordinate(50,50),100,100)
-    square2.dy = 0
+    const square2 = createRect(new coordinate(50,50),10,10)
+    square2.dx = 0.1
+    square2.dy = 0.1
     square2.colour = "orange"
-   
+
+    const square3 = createRect(new coordinate(100,100),10,30)
+    square3.dy = 0.1
+    square3.colour = "violet"
+    square3.angularRotation = 0.07
+
+    const ground = createRect(new coordinate(0,400),1200,10)
+    ground.colour = "green"
+    ground.mass = 1
+
+    const wallLeft = createRect(new coordinate(3,0),5,800)
+    wallLeft.colour = "black"
+    const wallRight = createRect(new coordinate(600,0),5,800)
+    wallRight.colour = "black"
+    const top = createRect(new coordinate(0,0),1200,5)
+    top.colour = "black"
+
+    game.addShape(ground)
+    game.addShape(wallLeft)
+    game.addShape(wallRight)
+    game.addShape(top)
+
     game.addShape(newSquare)
     game.addShape(square2)
+    game.addShape(square3)
 
     const canvas = document.getElementById('canvas') as HTMLCanvasElement // convert element to a type- not necessary but tells compiler that this object is a canvas
     const ctx = canvas.getContext('2d')
