@@ -1,24 +1,43 @@
 import { coordinate } from "./coordinate";
 import { finiteSegment } from "./finiteSegment";
-
+import { Vector } from "./vector";
+export const gravity = new Vector(0,9.81/10000)
+//frame rate is very important only 60 frames per second, if the shape is moving too fast
+//the frame rate cannot keep up iwth an object
+//we need to caluclate when exactly they collide in between frame rates where they can't detect collisions
 //create polygon
 export class Polygon {
   mass: number;
   colour: string = 'pink';
   points: coordinate[];
-  dx: number;
-  dy: number;
+  //I'm replacing dx and dy with veloccity
+  //dx: number;
+ // dy: number;
   angularRotation: number;
+   velocity: Vector
+   acceleration: Vector
+   immobile: boolean
+   friction: number
+  
+
   //... puts array (Variadic Parameter) 
   constructor(...points: coordinate[]) {
     this.points = points;
-    this.dx = 0;
-    this.dy = 0;
     this.mass = 1;
     this.angularRotation = 0;
+    this.velocity = new Vector(0,0)
+    this.acceleration = gravity
+    this.immobile = false
+    this.friction = 1
   }
   changeColour(colour: string) {
     this.colour = colour;
+  }
+    //need to calucate minimum y of the vertex of the shape (coordinate in the array)
+  //map function applies a function on each element in an array and return result
+  // arrow in typescript declares the funciton more concise
+  minY(): number{
+    return Math.min(...this.points.map((point)=> point.y))
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -66,12 +85,42 @@ export class Polygon {
     }
   }
   //how much the x and y change by millisecond
+  //putting acceleration and fixed position
   update(time: number) {
-    const dx = this.dx * time;
-    const dy = this.dy * time;
-    console.log(`dx=${dx},dy=${dy}`);
+    if (this.immobile == true){
+      return
+    }
+    //velocity is velocity vector add acceleration 
+    this.velocity = this.velocity.add(this.acceleration.ScalarMultiplication(time))
+    const dx = this.velocity.x * time;
+    const dy = this.velocity.y * time;
     this.rotateCentre(this.angularRotation);
     this.translate(dx, dy);
+  }
+
+  //calculating velocity between two objects after collision
+  CalculateVelocityAfterCollision(p: Polygon) {
+    const mass1 = this.mass
+    const mass2 = p.mass
+    const centre = this.calculateCentre()
+    const otherCentre = p.calculateCentre()
+    //calculate angle between the vector from the centres to the x axis
+    const angle = Math.atan2(otherCentre.x - centre.x,otherCentre.y - centre.y)
+    const velocity1 = this.velocity.rotate(angle)
+    const velocity2 = p.velocity.rotate(angle)
+    //conservation of momentum
+    const speed1 = velocity1.ScalarMultiplication((mass1 - mass2) / (mass1 + mass2)).add(velocity2.ScalarMultiplication((2 * mass2) / (mass1 + mass2)))
+    const velocity1Final = speed1.rotate(-angle)
+
+    if(!this.immobile) {
+       this.velocity = velocity1Final.ScalarMultiplication(this.friction)
+    }
+    const speed2 = velocity2.ScalarMultiplication((mass2 - mass1) / (mass1 + mass2)).add(velocity1.ScalarMultiplication((2 * mass1) / (mass1 + mass2)))
+    const velocity2Final = speed2.rotate(-angle)
+
+    if(!p.immobile) {
+       p.velocity = velocity2Final.ScalarMultiplication(p.friction)
+    }
   }
 
   //method in polygon class detecting collisions
@@ -109,7 +158,6 @@ export class Polygon {
   //resolving collisions: collision works but shape becomes trapped to avoid this I need to seperate the shape when they collide
   //collision solve displacement
   resolveCollision(p: Polygon) {
-    this.dx = -this.dx;
-    this.dy = -this.dy;
+    this.velocity = new Vector(-this.velocity.x, -this.velocity.y)
   }
 }

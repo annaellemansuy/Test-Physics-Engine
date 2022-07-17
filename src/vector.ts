@@ -1,23 +1,47 @@
 export class Vector {
-  constructor(public x: number, public y: number){}
-  Smultipy(s: number){
-    //scalar blah blah blah quantity
-    return new Vector(this.x * s, this.y*s)
-  }
-  add(v:Vector){
-    return new Vector(this.x + v.x, this.y +v.y ) 
-  }
-  subtract(v:Vector){
-    return new Vector(this.x - v.x, this.y - v.y ) 
-  }
-  multiply(v:Vector){
-    return new Vector(this.x*v.x, this.y*v.y ) 
-  }
+  constructor(public x: number, public y: number) {}
   dotProduct(v: Vector) {
-    return this.x * v.x + this.y*v.y
+    return this.x * v.x + this.y * v.y
   }
-  directionOfVector(): number {
-    //returns angle in radians from x axis to a point
+  normalize() {
+    const length = Math.sqrt(this.x * this.x + this.y * this.y)
+    return new Vector(this.x / length, this.y / length)
+  }
+
+  add(v: Vector) {
+    return new Vector(this.x + v.x, this.y + v.y)
+  }
+
+  subtract(v: Vector) {
+    return new Vector(this.x - v.x, this.y - v.y)
+  }
+
+  angleDirection(): number {
     return Math.atan2(this.y, this.x)
   }
+
+  multiply(v: Vector) {
+    return new Vector(this.x * v.x, this.y * v.y)
+  }
+
+  ScalarMultiplication(s: number) {
+    return new Vector(this.x * s, this.y * s)
+  }
+
+  rotate(angle: number) {
+    const x = this.x
+    const y = this.y
+    return new Vector(
+      x * Math.cos(angle) - y * Math.sin(angle),
+      x * Math.sin(angle) + y * Math.cos(angle)
+    )
+  }
+
+  isNearlyZero() {
+    if(Math.abs(this.x) < 0.00001 && Math.abs(this.y) < 0.00001) {
+      return true
+    }
+    return false
+  }
+
 }
