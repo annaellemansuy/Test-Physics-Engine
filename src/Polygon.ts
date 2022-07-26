@@ -37,7 +37,7 @@ export class Polygon {
   //map function applies a function on each element in an array and return result
   // arrow in typescript declares the funciton more concise
   minY(): number{
-    return Math.min(...this.points.map((point)=> point.y))
+    return Math.min(...this.points.map((points)=> points.y))
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -100,28 +100,38 @@ export class Polygon {
 
   //calculating velocity between two objects after collision
   CalculateVelocityAfterCollision(p: Polygon) {
+    
     const mass1 = this.mass
     const mass2 = p.mass
     const centre = this.calculateCentre()
     const otherCentre = p.calculateCentre()
     //calculate angle between the vector from the centres to the x axis
-    const angle = Math.atan2(otherCentre.x - centre.x,otherCentre.y - centre.y)
+    const angle = Math.atan2(otherCentre.y - centre.y,otherCentre.x - centre.x)
+    //rotate velocities by this angle to turn into a one-dimensional problem
     const velocity1 = this.velocity.rotate(angle)
     const velocity2 = p.velocity.rotate(angle)
-    //conservation of momentum
+    //conservation of momentum and kinetic energy
     const speed1 = velocity1.ScalarMultiplication((mass1 - mass2) / (mass1 + mass2)).add(velocity2.ScalarMultiplication((2 * mass2) / (mass1 + mass2)))
+    //rotate back to two dimensional
     const velocity1Final = speed1.rotate(-angle)
 
-    if(!this.immobile) {
-       this.velocity = velocity1Final.ScalarMultiplication(this.friction)
-    }
-    const speed2 = velocity2.ScalarMultiplication((mass2 - mass1) / (mass1 + mass2)).add(velocity1.ScalarMultiplication((2 * mass1) / (mass1 + mass2)))
-    const velocity2Final = speed2.rotate(-angle)
 
-    if(!p.immobile) {
-       p.velocity = velocity2Final.ScalarMultiplication(p.friction)
+    if(this.immobile==false) {
+      console.log(this.velocity)
+      this.velocity = velocity1Final
+      //.ScalarMultiplication(this.friction)
+    }
+
+     const speed2 = velocity2.ScalarMultiplication((mass2 - mass1) / (mass1 + mass2)).add(velocity1.ScalarMultiplication((2 * mass1) / (mass1 + mass2)))
+     const velocity2Final = speed2.rotate(-angle)
+
+    if(p.immobile==false) {
+      p.velocity = velocity2Final
+      //.ScalarMultiplication(p.friction)
     }
   }
+
+  
 
   //method in polygon class detecting collisions
   collideWith(p: Polygon): coordinate[] {
@@ -157,7 +167,7 @@ export class Polygon {
   }
   //resolving collisions: collision works but shape becomes trapped to avoid this I need to seperate the shape when they collide
   //collision solve displacement
-  resolveCollision(p: Polygon) {
-    this.velocity = new Vector(-this.velocity.x, -this.velocity.y)
-  }
+  //resolveCollision(p: Polygon) {
+   // this.velocity = new Vector(-this.velocity.x, -this.velocity.y)
+ // }
 }

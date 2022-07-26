@@ -24,17 +24,17 @@ const game = new GameEngine()
 
   function initialise(){
     console.log("init")
-    const newSquare = createRect(new coordinate(80,80), 50, 30)
+    const newSquare = createRect(new coordinate(200,80), 50, 30)
     newSquare.rotateCentre(Math.PI/4)
     newSquare.velocity = new Vector(0,0)
     newSquare.angularRotation = 0.0
 
-    const square2 = createRect(new coordinate(50,50),10,10)
-    square2.velocity = new Vector(10,10)
+    const square2 = createRect(new coordinate(50,50),20,20)
+    square2.velocity = new Vector(0,0)
     square2.colour = "orange"
 
     const square3 = createRect(new coordinate(100,100),10,30)
-    square3.velocity = new Vector(100,100)
+    square3.velocity = new Vector(0,0)
     square3.colour = "violet"
     square3.angularRotation = 0.07
 
@@ -64,8 +64,8 @@ const game = new GameEngine()
     game.addShape(top)
 
     game.addShape(newSquare)
-    //game.addShape(square2)
-    //game.addShape(square3)
+    game.addShape(square2)
+    game.addShape(square3)
 
     const canvas = document.getElementById('canvas') as HTMLCanvasElement // convert element to a type- not necessary but tells compiler that this object is a canvas
     const ctx = canvas.getContext('2d')

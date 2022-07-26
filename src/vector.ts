@@ -37,11 +37,4 @@ export class Vector {
     )
   }
 
-  isNearlyZero() {
-    if(Math.abs(this.x) < 0.00001 && Math.abs(this.y) < 0.00001) {
-      return true
-    }
-    return false
-  }
-
 }

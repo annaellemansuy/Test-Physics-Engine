@@ -1,4 +1,6 @@
 import { coordinate } from "./coordinate";
+import {Vector} from "./vector"
+import {Polygon} from "./Polygon"
 
 class Circle {
   colour: string = 'black';
@@ -18,11 +20,20 @@ class Circle {
   }
   //detect collision with another circle
   collideWith(anotherCircle: Circle) {
-    const minDistance = Math.sqrt((anotherCircle.centre.x - this.centre.x) + (anotherCircle.centre.y - this.centre.y));
+    const minDistance = Math.sqrt((anotherCircle.centre.x - this.centre.x)^2 + (anotherCircle.centre.y - this.centre.y)^2);
     const distance = this.radius + anotherCircle.radius;
     if (distance < minDistance) {
       return true;
     }
     return false;
+  }
+  /*
+  //detect collisoin with another rectangle
+  collideRectwith(polygon: Polygon){
+    const polygoncentre = polygon.calculateCentre()
+    const minDist = Math.sqrt((polygoncentre.x - this.centre.x)^2 + (polygoncentre.y - this.centre.y)^2)
+    const maxRadius = 
+    const dist = this.radius + 
+    */
   }
 }

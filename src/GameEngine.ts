@@ -81,15 +81,15 @@ export class GameEngine {
             continue
           }
           const c = currentShape.collideWith(otherShape);
+          // if there is something in the array of collisons (intersescting points)
           if (c.length > 0) {
             this.ApproximationOfCollisonTimeAndPosition(dt,currentShape, otherShape)
             //stop shape from falling off the ground because it happens
             //the y axis is reversed  in a computer REMEMBER THAT
             if(otherShape.immobile && currentShape.velocity.y<0.1 && currentShape.velocity.y >=0){
+              currentShape.colour = 'blue'
               currentShape.immobile = true
             }
-            
-            currentShape.colour = 'red'
             currentShape.CalculateVelocityAfterCollision(otherShape)
           }
         }
